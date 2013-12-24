@@ -18,22 +18,25 @@
 
 	$('.b-commersant_banner').after($banner);
 
-	$banner.
-		jrumble({
-			x: 1,
-			y: 2,
-			rotation: 1,
-			speed: 5,
-			opacity: true,
-			opacityMin: .05
-		}).
-		hover(
-			function(){ $(this).trigger('startRumble') },
-			function(){ $(this).trigger('stopRumble') }
-	).
-	on('click', function(){
+	loadScript('https://raw.github.com/i0z/tutuny2013/master/jrumble.min.js', function(){
+		$banner.
+			jrumble({
+				x: 1,
+				y: 2,
+				rotation: 1,
+				speed: 5,
+				opacity: true,
+				opacityMin: .05
+			}).
+			hover(
+				function(){ $(this).trigger('startRumble') },
+				function(){ $(this).trigger('stopRumble') }
+			)
+	});
+
+	$banner.on('click', function(){
 			if (false === init){
-				loadScript('snowstorm.js')?>', function(){
+				loadScript('https://raw.github.com/i0z/tutuny2013/master/snowstorm.js')?>', function(){
 					snow = loadSnow();
 					snow.start();
 				});
