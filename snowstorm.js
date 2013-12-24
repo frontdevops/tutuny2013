@@ -2,13 +2,15 @@
 
 !function(window, document){
 	function SnowStorm(){
-		this.flakesMax = 128;
-		this.flakesMaxActive = 64;
-		this.animationInterval = 24;
-		this.flakeBottom = null;
+		this.flakesMax = 256;
+		this.flakesMaxActive = 128;
+		this.animationInterval = 16;
+		this.flakeBottom = 0;
+		this.flakeStickBottoms = [],
 		this.targetElement = null;
-		this.followMouse = true;
-		this.snowColor = '#6495ed';
+		this.followMouse = false;
+		this.snowColor  = 'rgba(100,149,237,0)'; //'#6495ed';
+		this.snowShadow = '0 0 3px rgba(100,149,237,1)';
 		this.snowCharacter = '&bull;';
 		this.snowStick = true;
 		this.useMeltEffect = true;
@@ -18,69 +20,65 @@
 		this.flakeRightOffset = 0;
 		this.flakeWidth = 8;
 		this.flakeHeight = 8;
-		this.vMaxX = 5;
-		this.vMaxY = 4;
+		this.vMaxX = 2;
+		this.vMaxY = 8;
 		this.zIndex = 9999;
 
-		var addEvent = (typeof(window.attachEvent)=='undefined' ? function(o, evtName, evtHandler){
-			return o.addEventListener(evtName, evtHandler, false);
-		} : function(o, evtName, evtHandler){
-			return o.attachEvent('on'+evtName, evtHandler);
-		});
-
-		var removeEvent = (typeof(window.attachEvent)=='undefined' ? function(o, evtName, evtHandler){
-			return o.removeEventListener(evtName, evtHandler, false);
-		} : function(o, evtName, evtHandler){
-			return o.detachEvent('on'+evtName, evtHandler);
-		});
-
-		function rnd(n, min){
-			if (isNaN(min)){
-				min = 0;
-			}
-			return (Math.random()*n)+min;
-		}
-
-		function plusMinus(n){
-			return (parseInt(rnd(2), 10)==1 ? n* -1 : n);
-		}
-
-		var s = this;
-		var storm = this;
 		this.timers = [];
 		this.flakes = [];
 		this.disabled = false;
 		this.active = false;
 
-		var isIE = navigator.userAgent.match(/msie/i);
-		var isIE6 = navigator.userAgent.match(/msie 6/i);
-		var isOldIE = (isIE && (isIE6 || navigator.userAgent.match(/msie 5/i)));
-		var isWin9X = navigator.appVersion.match(/windows 98/i);
-		var isiPhone = navigator.userAgent.match(/iphone/i);
-		var isBackCompatIE = (isIE && document.compatMode=='BackCompat');
-		var noFixed = ((isBackCompatIE || isIE6 || isiPhone) ? true : false);
-		var screenX = null;
-		var screenX2 = null;
-		var screenY = null;
-		var scrollY = null;
-		var vRndX = null;
-		var vRndY = null;
-		var windOffset = 1;
-		var windMultiplier = 2;
-		var flakeTypes = 6;
-		var fixedForEverything = false;
-		var opacitySupported = (function(){
-			try{
-				document.createElement('div').style.opacity = '0.5';
-			} catch (e) {
-				return false;
-			}
-			return true;
-		})();
-		var docFrag = document.createDocumentFragment();
+		var addEvent = typeof(window.attachEvent)=='undefined'
+			? function(o, evtName, evtHandler){
+					return o.addEventListener(evtName, evtHandler, false);
+				}
+			: function(o, evtName, evtHandler){
+					return o.attachEvent('on'+evtName, evtHandler);
+				};
+
+		var removeEvent = typeof(window.attachEvent)=='undefined'
+			? function(o, evtName, evtHandler){
+					return o.removeEventListener(evtName, evtHandler, false);
+				}
+			: function(o, evtName, evtHandler){
+					return o.detachEvent('on'+evtName, evtHandler);
+				};
+
+		var didInit = false,
+			s = this,
+			storm = this,
+			isIE = navigator.userAgent.match(/msie/i),
+			isIE6 = navigator.userAgent.match(/msie 6/i),
+			isOldIE = (isIE && (isIE6 || navigator.userAgent.match(/msie 5/i))),
+			isWin9X = navigator.appVersion.match(/windows 98/i),
+			isiPhone = navigator.userAgent.match(/iphone/i),
+			isBackCompatIE = (isIE && document.compatMode=='BackCompat'),
+			noFixed = ((isBackCompatIE || isIE6 || isiPhone) ? true : false),
+			screenX = null,
+			screenX2 = null,
+			screenY = null,
+			scrollY = null,
+			vRndX = null,
+			vRndY = null,
+			windOffset = 1,
+			windMultiplier = 2,
+			flakeTypes = 6,
+			fixedForEverything = false,
+			opacitySupported = (function(){
+					try{
+						document.createElement('div').style.opacity = '0.5';
+					} catch (e) {
+						return false;
+					}
+					return true;
+				})(),
+			docFrag = document.createDocumentFragment();
+
 		if (s.flakeLeftOffset===null){
 			s.flakeLeftOffset = 0;
 		}
+
 		if (s.flakeRightOffset===null){
 			s.flakeRightOffset = 0;
 		}
@@ -139,11 +137,12 @@
 		this.freeze = function(){
 			// pause animation
 			if (!s.disabled){
-				s.disabled = 1;
+				s.disabled = true;
 			}
 			else {
 				return false;
 			}
+
 			for (var i = s.timers.length; i--;){
 				clearInterval(s.timers[i]);
 			}
@@ -184,10 +183,12 @@
 			}
 			removeEvent(window, 'scroll', s.scrollHandler);
 			removeEvent(window, 'resize', s.resizeHandler);
+/*
 			if (!isOldIE){
 				removeEvent(window, 'blur', s.freeze);
 				removeEvent(window, 'focus', s.resume);
 			}
+//*/
 		};
 
 		this.show = function(){
@@ -216,6 +217,7 @@
 			this.o = document.createElement('div');
 			this.o.innerHTML = storm.snowCharacter;
 			this.o.style.color = storm.snowColor;
+			this.o.style.textShadow = storm.snowShadow;
 			this.o.style.position = (fixedForEverything ? 'fixed' : 'absolute');
 			this.o.style.width = storm.flakeWidth+'px';
 			this.o.style.height = storm.flakeHeight+'px';
@@ -223,6 +225,7 @@
 			this.o.style.overflow = 'hidden';
 			this.o.style.fontWeight = 'normal';
 			this.o.style.zIndex = storm.zIndex;
+
 			docFrag.appendChild(this.o);
 
 			this.refresh = function(){
@@ -230,6 +233,7 @@
 					// safety check
 					return false;
 				}
+
 				s.o.style.left = s.x+'px';
 				s.o.style.top = s.y+'px';
 			};
@@ -243,6 +247,13 @@
 						s.o.style.top = storm.flakeBottom+'px';
 					}
 					else {
+/*
+						if (this.flakeStickBottoms.length > 0) {
+							for (var i in this.flakeStickBottoms){
+								if ()
+							}
+						}
+//*/
 						s.o.style.display = 'none';
 						s.o.style.top = 'auto';
 						s.o.style.bottom = '0px';
@@ -309,8 +320,6 @@
 			};
 
 			this.animate = function(){
-				// main animation loop
-				// move, check status, die etc.
 				s.move();
 			};
 
@@ -430,12 +439,16 @@
 		this.init = function(){
 			s.randomizeWind();
 			s.createSnow(s.flakesMax); // create initial batch
+
 			addEvent(window, 'resize', s.resizeHandler);
 			addEvent(window, 'scroll', s.scrollHandler);
+/*
 			if (!isOldIE){
 				addEvent(window, 'blur', s.freeze);
 				addEvent(window, 'focus', s.resume);
 			}
+//*/
+
 			s.resizeHandler();
 			s.scrollHandler();
 			if (s.followMouse){
@@ -445,17 +458,17 @@
 			s.timerInit();
 		};
 
-		var didInit = false;
-
 		this.start = function(bFromOnLoad){
 			if (!didInit){
 				didInit = true;
 			}
-			else
+			else {
 				if (bFromOnLoad){
 					// already loaded and running
 					return true;
 				}
+			}
+
 			if (typeof s.targetElement=='string'){
 				var targetID = s.targetElement;
 				s.targetElement = document.getElementById(targetID);
@@ -463,15 +476,19 @@
 					throw new Error('Snowstorm: Unable to get targetElement "'+targetID+'"');
 				}
 			}
+
 			if (!s.targetElement){
 				s.targetElement = (!isIE ? (document.documentElement ? document.documentElement : document.body) : document.body);
 			}
+
 			if (s.targetElement!=document.documentElement && s.targetElement!=document.body){
 				s.resizeHandler = s.resizeHandlerAlt; // re-map handler to get element instead of screen dimensions
 			}
+
 			s.resizeHandler(); // get bounding box elements
 			s.usePositionFixed = (s.usePositionFixed && !noFixed); // whether or not position:fixed is supported
 			fixedForEverything = s.usePositionFixed;
+
 			if (screenX && screenY && !s.disabled){
 				s.init();
 				s.active = true;
@@ -491,6 +508,16 @@
 			addEvent(window, 'load', doStart);
 		}
 
+		function rnd(n, min){
+			if (isNaN(min)){
+				min = 0;
+			}
+			return (Math.random()*n)+min;
+		}
+
+		function plusMinus(n){
+			return (parseInt(rnd(2), 10)==1 ? n* -1 : n);
+		}
 	}
 
 	window.SnowStorm = SnowStorm;
