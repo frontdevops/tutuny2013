@@ -6,8 +6,8 @@
 	var init = false,
 		$banner = $([
 				'<div style="cursor: pointer">',
-					'<div class="ny2013-d1" style="font-size:16px;color:#6699cc">Tutu.ru настроение</div>',
-					'<div class="ny2013-d2" style="font-size:14px;color:#ссс">Хочу новогоднего настроения!</div>',
+					'<div class="ny2013-d1" style="font-size:16px;color:#6699cc">Tutu.ru РЅР°СЃС‚СЂРѕРµРЅРёРµ</div>',
+					'<div class="ny2013-d2" style="font-size:14px;color:#СЃСЃСЃ">РҐРѕС‡Сѓ РЅРѕРІРѕРіРѕРґРЅРµРіРѕ РЅР°СЃС‚СЂРѕРµРЅРёСЏ!</div>',
 				'</div>'
 		].join('')),
 		play,
@@ -48,8 +48,8 @@
 					init = 1;
 
 					$banner.
-						find('.ny2013-d1').html('Tutu.ru настроение').end().
-						find('.ny2013-d2').html('Хочу еще! =)');
+						find('.ny2013-d1').html('Tutu.ru РЅР°СЃС‚СЂРѕРµРЅРёРµ').end().
+						find('.ny2013-d2').html('РҐРѕС‡Сѓ РµС‰Рµ! =)');
 
 					snow.stop();
 					play.pause();
@@ -58,8 +58,8 @@
 					init = 2;
 
 					$banner.
-						find('.ny2013-d1').html('Поздравляем').end().
-						find('.ny2013-d2').html('С новым, 2014, годом!');
+						find('.ny2013-d1').html('РџРѕР·РґСЂР°РІР»СЏРµРј').end().
+						find('.ny2013-d2').html('РЎ РЅРѕРІС‹Рј, 2014, РіРѕРґРѕРј!');
 
 					snow.start();
 					play.play();
